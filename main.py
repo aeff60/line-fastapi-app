@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, Request, HTTPException
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
@@ -7,16 +8,23 @@ import requests
 # สร้าง FastAPI instance
 app = FastAPI()
 
+# ดึงค่าจาก Environment Variables
+LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET")
+LINE_CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
+AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
+AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
+
+# ตรวจสอบว่าค่าถูกตั้งไว้
+if not all([LINE_CHANNEL_SECRET, LINE_CHANNEL_ACCESS_TOKEN, AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY]):
+    raise ValueError("Environment variables not set properly")
+
 # ตั้งค่า Line Messaging API
-LINE_CHANNEL_SECRET = ""
-LINE_CHANNEL_ACCESS_TOKEN = ""
 line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
 
-# ตั้งค่า Azure OpenAI
-AZURE_OPENAI_ENDPOINT = ""
-AZURE_OPENAI_API_KEY = ""
-
+@app.get("/hello")
+async def read_root():
+    return {"message": "Hello, world!"}
 
 @app.post("/callback")
 async def callback(request: Request):
